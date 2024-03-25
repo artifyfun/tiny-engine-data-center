@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "workflows",
+  "info": {
+    "name": "workflows",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "workflow": {
+      "type": "json",
+      "required": true,
+      "private": false
+    },
+    "paramsNodes": {
+      "type": "json",
+      "required": true
+    },
+    "key": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "prompt": {
+      "type": "json",
+      "required": true
+    },
+    "description": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "imageUrl": {
+      "type": "text"
+    },
+    "app": {
+      "type": "biginteger",
+      "required": true
+    },
+    "workflowType": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
