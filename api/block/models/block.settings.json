@@ -52,8 +52,8 @@
       "via": "blocks"
     },
     "categories": {
-      "collection": "block-category",
-      "via": "blocks"
+      "via": "blocks",
+      "collection": "block-category"
     },
     "description": {
       "type": "text"

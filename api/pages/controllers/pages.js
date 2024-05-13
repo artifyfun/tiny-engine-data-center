@@ -17,7 +17,7 @@ module.exports = {
   async checkUpdate(ctx) {
     const { id } = ctx.params;
     const { body } = ctx.request;
-    const { user } = ctx.session;
+    const { user } = ctx.state;
     let { occupier } = await strapi.services.pages.findOne({ id });
     // 当前页面没有被锁定就请求更新页面接口，提示无权限
     if (occupier === null) {
@@ -39,7 +39,7 @@ module.exports = {
   async updateOccupier(ctx) {
     const { id } = ctx.params;
     const { state } = ctx.request.query;
-    const { user } = ctx.session;
+    const { user } = ctx.state;
     let { occupier } = await strapi.services.pages.findOne({ id });
     occupier = occupier && trimUserData(occupier);
     const isICanDoIt = iCanDoIt(occupier, user);
@@ -65,7 +65,7 @@ module.exports = {
 
   async checkDelete(ctx) {
     const { id } = ctx.params;
-    const { user } = ctx.session;
+    const { user } = ctx.state;
     let { occupier } = await strapi.services.pages.findOne({ id });
     // 如果当前页面没人占用 或者是自己占用 可以删除该页面
     if (iCanDoIt(occupier, user)) {
@@ -144,7 +144,7 @@ module.exports = {
     return result;
   },
   async create(ctx) {
-    const { user } = ctx.session;
+    const { user } = ctx.state;
     let { body } = ctx.request;
     const result = await strapi.services.pages.create({ ...body, occupier: user.id });
     return sanitizeEntity(result, { model: strapi.models.pages });

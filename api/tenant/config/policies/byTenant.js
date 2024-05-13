@@ -13,7 +13,7 @@
  * 创建/查询时，添加租户标识
  */
 module.exports = async (ctx, next) => {
-  const { user } = ctx.session;
+  const { user } = ctx.state;
   const { header, method, body, query } = ctx.request;
 
   if (!user && header?.['x-tinybuilder-user'] === 'backend') {

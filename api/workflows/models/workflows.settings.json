@@ -36,7 +36,7 @@
       "type": "string"
     },
     "imageUrl": {
-      "type": "text"
+      "type": "string"
     },
     "app": {
       "type": "biginteger",

@@ -35,7 +35,7 @@ const updateBlock = async (ctx, id, body) => {
   }
 
   handlePublicScope(currentPublicScope, body);
-  handleTinyReserved(ctx.session.user, body);
+  handleTinyReserved(ctx.state.user, body);
 
   const result = await strapi.services.block.update({ id }, body);
   return sanitizeEntity(result, { model: strapi.models.block });
@@ -52,7 +52,7 @@ module.exports = {
   },
 
   async users(ctx) {
-    const { list } = await findAllMaterial(ctx.session.user, ctx.request.query, 'block', 'blocks', []);
+    const { list } = await findAllMaterial(ctx.state.user, ctx.request.query, 'block', 'blocks', []);
     const userSet = new Set();
     list.forEach((item) => !userSet.has(item.createdBy) && userSet.add(item.createdBy));
     const getUsersSql = `SELECT id, username, resetPasswordToken FROM \`users-permissions_user\` WHERE id IN(${Array.from(
@@ -65,7 +65,7 @@ module.exports = {
     const { id } = ctx.params;
     const { body, header } = ctx.request;
     const { appId } = ctx.query;
-    const { user } = ctx.session;
+    const { user } = ctx.state;
     const emptyUser = header[CUSTOM_HEADER.xUser];
     const isBackendUser = emptyUser === TINY_BUILDER_USER.backend;
     // 删除更新请求中的占用者数据属性，防止有人瞎改
@@ -88,9 +88,11 @@ module.exports = {
     }
     // 如果为半公开: 2
     // 半公开范围不包含该组织
-    const tenant = block.public_scope_tenants.find((itTenant) => itTenant.id === Number(user.tenant.id));
+    // const tenant = block.public_scope_tenants.find((itTenant) => itTenant.id === Number(user.tenant.id));
+    const tenant = block.public_scope_tenants.find((itTenant) => itTenant.id === 1);
     if (!tenant) {
-      throwErrors(`does not include the tenant: ${user.tenant.id}`, ERROR_TYPE.forbidden);
+      // throwErrors(`does not include the tenant: ${user.tenant.id}`, ERROR_TYPE.forbidden);
+      throwErrors(`does not include the tenant: ${1}`, ERROR_TYPE.forbidden);
     }
     // 区块是否属于应用
     const blockCategories = await strapi.services['block-category'].find({ app: appId });
@@ -120,7 +122,7 @@ module.exports = {
   async updateOccupier(ctx) {
     const { id } = ctx.params;
     const { state } = ctx.request.query;
-    const { user } = ctx.session;
+    const { user } = ctx.state;
     let { occupier } = await strapi.services.block.findOne({ id });
     occupier = occupier && trimUserData(occupier);
     const isICanDoIt = iCanDoIt(occupier, user);
@@ -146,7 +148,7 @@ module.exports = {
 
   async checkDelete(ctx) {
     const { id } = ctx.params;
-    const { user } = ctx.session;
+    const { user } = ctx.state;
     let { occupier } = await strapi.services.block.findOne({ id });
     // 如果当前页面没人占用 或者是自己占用 可以删除该页面
     if (iCanDoIt(occupier, user)) {
@@ -160,11 +162,11 @@ module.exports = {
   },
 
   async findBlocks(ctx) {
-    return getNotInGroupBlocks(ctx.session.user, ctx.query, ctx.params);
+    return getNotInGroupBlocks(ctx.state.user, ctx.query, ctx.params);
   },
 
   async countNotInGroupBlocks(ctx) {
-    const blocks = await getNotInGroupBlocks(ctx.session.user, ctx.query, ctx.params);
+    const blocks = await getNotInGroupBlocks(ctx.state.user, ctx.query, ctx.params);
     return blocks.length;
   },
 
@@ -187,7 +189,7 @@ module.exports = {
 
   async listNew(ctx) {
     const { categoryId, appId } = ctx.query;
-    const { id: createdBy } = ctx.session.user;
+    const { id: createdBy } = ctx.state.user;
     const blocks = await strapi.services.block.listNew({ categoryId, createdBy, appId });
     return sanitizeEntity(blocks, {
       model: strapi.models.block,
@@ -201,7 +203,7 @@ module.exports = {
     const { public_scope_mode } = ctx.request.query;
     delete ctx.request.query.public_scope_mode;
     const { list } = await findAllMaterial(
-      ctx.session.user,
+      ctx.state.user,
       ctx.request.query,
       'block',
       'blocks',
@@ -223,7 +225,7 @@ module.exports = {
 
   // 分页列表
   async pagination(ctx) {
-    const { list, total } = await findAllMaterial(ctx.session.user, ctx.request.query, 'block', 'blocks', [
+    const { list, total } = await findAllMaterial(ctx.state.user, ctx.request.query, 'block', 'blocks', [
       'createdBy',
       'occupier',
     ]);
@@ -241,11 +243,11 @@ module.exports = {
 
   // 完整列表
   async find(ctx) {
-    return strapi.services.block.findBlocks(ctx.session.user, ctx.request.query);
+    return strapi.services.block.findBlocks(ctx.state.user, ctx.request.query);
   },
 
   async count(ctx) {
-    const { list } = await findAllMaterial(ctx.session.user, ctx.request.query, 'block', 'blocks');
+    const { list } = await findAllMaterial(ctx.state.user, ctx.request.query, 'block', 'blocks');
     return list.length;
   },
 
@@ -253,7 +255,7 @@ module.exports = {
     const data = { ...ctx.request.body };
 
     handlePublicScope(data.public, data);
-    handleTinyReserved(ctx.session.user, data, true);
+    handleTinyReserved(ctx.state.user, data, true);
 
     const block = await strapi.services.block.create(data);
     return sanitizeEntity(block, { model: strapi.models.block });
@@ -367,7 +369,8 @@ const getNotInGroupBlocks = async (user, query, params) => {
       if (
         user &&
         item.public === PUBLIC_SCOPE.PUBLIC_IN_TENANTS &&
-        item.public_scope_tenants.map((row) => row.id).includes(parseInt(user.tenant?.id, 10))
+        // item.public_scope_tenants.map((row) => row.id).includes(parseInt(user.tenant?.id, 10))
+        item.public_scope_tenants.map((row) => row.id).includes(parseInt(1, 10))
       ) {
         return true;
       }

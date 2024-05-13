@@ -1,4 +1,5 @@
 {
+  "kind": "collectionType",
   "collectionName": "block_categories",
   "info": {
     "name": "block-category",
@@ -7,7 +8,8 @@
   "options": {
     "increments": true,
     "timestamps": true,
-    "comment": ""
+    "comment": "",
+    "draftAndPublish": false
   },
   "attributes": {
     "name": {
@@ -19,15 +21,15 @@
       "required": true
     },
     "app": {
-      "via": "block_categories",
-      "model": "apps"
+      "model": "apps",
+      "via": "block_categories"
     },
     "desc": {
       "type": "string"
     },
     "blocks": {
-      "via": "categories",
       "collection": "block",
+      "via": "categories",
       "dominant": true
     },
     "createdBy": {

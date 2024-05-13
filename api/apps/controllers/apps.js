@@ -85,9 +85,23 @@ module.exports = {
     return strapi.services['get-app-schema'].getAppSchemaMeta(id, partParam);
   },
 
+  async create(ctx) {
+    const { body } = ctx.request;
+    if (!body) {
+      throwErrors('Missing  "body" parameter', ERROR_TYPE.notFound);
+    }
+    const { user = {} } = ctx.state;
+    const createParam = {
+      ...body,
+      createdBy: user.id,
+    }
+    
+    return strapi.services.apps.create(createParam);
+  },
+
   async update(ctx) {
     const { body } = ctx.request;
-    const { user = {} } = ctx.session;
+    const { user = {} } = ctx.state;
     const { id } = ctx.params;
     if (!body) {
       throwErrors('Missing  "body" parameter', ERROR_TYPE.notFound);
@@ -167,7 +181,7 @@ module.exports = {
     });
     const includeFields = ['id', 'label', 'npm_name', 'public_scope_tenants', 'histories_length'];
     const blocks = await strapi.services.block.findBlocks(
-      ctx.session.user,
+      ctx.state.user,
       { id_in: Array.from(blockIdSet) },
       includeFields
     );
@@ -200,18 +214,27 @@ module.exports = {
 
 const getAppsFilter = async (ctx) => {
   const { query } = ctx.request;
-  const { user } = ctx.session;
+  const { user } = ctx.state;
+  // if (query.filter_type === 'mine') {
+  //   delete query.filter_type;
+  //   const filter = {
+  //     // tenant: user.tenant.id,
+  //     tenant: 1,
+  //   };
+  //   if (!isTenantAdmin(user)) {
+  //     const appsId = await getManagedAppsId(user);
+  //     const publicAdmins = await getPublicSuperAdmin();
+  //     const publicAdminsId = publicAdmins.map((item) => item.id);
+  //     filter._or = [{ createdBy: user.id }, { id_in: appsId }, { set_default_by_in: publicAdminsId }];
+  //   }
+  //   return _.merge(query, filter);
+  // }
+
   if (query.filter_type === 'mine') {
     delete query.filter_type;
     const filter = {
-      tenant: user.tenant.id,
+      createdBy: user.id,
     };
-    if (!isTenantAdmin(user)) {
-      const appsId = await getManagedAppsId(user);
-      const publicAdmins = await getPublicSuperAdmin();
-      const publicAdminsId = publicAdmins.map((item) => item.id);
-      filter._or = [{ createdBy: user.id }, { id_in: appsId }, { set_default_by_in: publicAdminsId }];
-    }
     return _.merge(query, filter);
   }
 

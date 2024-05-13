@@ -75,8 +75,8 @@
       "via": "app"
     },
     "block_categories": {
-      "collection": "block-category",
-      "via": "app"
+      "via": "app",
+      "collection": "block-category"
     },
     "source_tpls": {
       "collection": "source-tpl",

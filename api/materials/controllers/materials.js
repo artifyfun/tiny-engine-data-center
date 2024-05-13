@@ -40,7 +40,7 @@ module.exports = {
   },
 
   async find(ctx) {
-    const { list } = await findAllMaterial(ctx.session.user, ctx.request.query, 'materials', 'materials', [
+    const { list } = await findAllMaterial(ctx.state.user, ctx.request.query, 'materials', 'materials', [
       'createdBy',
       'material_category_relations',
     ]);
@@ -72,7 +72,7 @@ module.exports = {
   },
 
   async count(ctx) {
-    const { list } = await findAllMaterial(ctx.session.user, ctx.request.query, 'materials');
+    const { list } = await findAllMaterial(ctx.state.user, ctx.request.query, 'materials');
     return list.length;
   },
 };
