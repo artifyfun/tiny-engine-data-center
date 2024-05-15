@@ -100,6 +100,14 @@ module.exports = {
       const template = await strapi.services.apps.findOne({ template_type: 'serviceDevelop'});
       console.log('template', template);
       // todo: 从模板创建应用
+      // /material-center/api/block-groups?app=926
+      // /material-center/api/block-groups
+      // /app-center/api/pages/list/926
+      // /material-center/api/blocks?appId=926
+      // /material-center/api/block-categories?appId=926
+      // /app-center/api/sources/list/926
+      // /app-center/api/apps/extension/list?app=926&category=utils
+      // /workflows/api?app=926
     }
 
     delete createParam.action;
