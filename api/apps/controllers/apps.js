@@ -91,10 +91,18 @@ module.exports = {
       throwErrors('Missing  "body" parameter', ERROR_TYPE.notFound);
     }
     const { user = {} } = ctx.state;
-    const createParam = {
+    let createParam = {
       ...body,
       createdBy: user.id,
     }
+
+    if (body.action === 'creatAppFromTpl') {
+      const template = await strapi.services.apps.findOne({ template_type: 'serviceDevelop'});
+      console.log('template', template);
+      // todo: 从模板创建应用
+    }
+
+    delete createParam.action;
     
     return strapi.services.apps.create(createParam);
   },
