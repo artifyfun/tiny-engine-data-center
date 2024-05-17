@@ -97,22 +97,47 @@ module.exports = {
     }
 
     if (body.action === 'creatAppFromTpl') {
-      const template = await strapi.services.apps.findOne({ template_type: 'serviceDevelop'});
-      console.log('template', template);
-      // todo: 从模板创建应用
-      // /material-center/api/block-groups?app=926
-      // /material-center/api/block-groups
-      // /app-center/api/pages/list/926
-      // /material-center/api/blocks?appId=926
-      // /material-center/api/block-categories?appId=926
-      // /app-center/api/sources/list/926
-      // /app-center/api/apps/extension/list?app=926&category=utils
-      // /workflows/api?app=926
-    }
+      delete createParam.action;
+      try {
+        const res = await strapi.services.apps.create(createParam);
 
-    delete createParam.action;
-    
-    return strapi.services.apps.create(createParam);
+        try {
+          const template = await strapi.services.apps.findOne({ template_type: 'serviceDevelop'});
+          console.log('template', template);
+          // todo: 从模板创建应用
+
+          const blockGroups = await strapi.services['block-groups'].find({ app: template.id });
+          console.log('blockGroups', blockGroups);
+
+          const pages = await strapi.services['pages'].find({ app: template.id });
+          console.log('pages', pages);
+
+          const blocks = await strapi.services['block'].listNew({ appId: template.id, createdBy: user.id });
+          console.log('blocks', blocks);
+
+          const blockCategories = await strapi.services['block-category'].find({ app: template.id });
+          console.log('blockCategories', blockCategories);
+
+          const sources = await strapi.services['sources'].find({ app: template.id });
+          console.log('sources', sources);
+
+          const extensions = await strapi.services['app-extensions'].find({ app: template.id });
+          console.log('extensions', extensions);
+
+          const workflows = await strapi.services['workflows'].find({ app: template.id });
+          console.log('workflows', workflows);
+        } catch (error) {
+          console.error('create app from template error', error);
+        }
+
+        return res;
+      } catch (error) {
+        console.error('create app error', error);
+      }
+    } else {
+      delete createParam.action;
+      return strapi.services.apps.create(createParam);
+    }
   },
 
   async update(ctx) {
