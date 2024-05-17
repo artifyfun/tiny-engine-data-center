@@ -23,7 +23,7 @@
     "key": {
       "type": "string",
       "required": true,
-      "unique": true
+      "unique": false
     },
     "prompt": {
       "type": "json",

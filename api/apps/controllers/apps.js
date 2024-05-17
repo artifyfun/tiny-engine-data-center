@@ -124,12 +124,12 @@ module.exports = {
       try {
         const res = await strapi.services.apps.create(createParam);
         try {
-          const template = await strapi.services.apps.findOne({ template_type: 'serviceDevelop'});
-          console.log('template', template);
+          const template = await strapi.services.apps.findOne({ template_type: 'serviceDevelop' });
+          // console.log('template', template);
           // todo: 从模板创建应用
 
           const blockGroups = await strapi.services['block-groups'].find({ app: template.id });
-          console.log('blockGroups', blockGroups);
+          // console.log('blockGroups', blockGroups);
           blockGroups.forEach(async (blockGroup) => {
             const createParam = pickObject(blockGroup, ['app', 'name', 'desc']);
             await strapi.services['block-groups'].create({
@@ -139,10 +139,9 @@ module.exports = {
           })
 
           const pages = await strapi.services['pages'].find({ app: template.id });
-          console.log('pages', pages);
+          // console.log('pages', pages);
           pages.forEach(async (page) => {
             const { is_page } = page;
-            const { pages, folders } = strapi.services
             if (is_page) {
               // 创建页面
               const createPageParam = pickObject(
@@ -160,7 +159,7 @@ module.exports = {
                   'page_content'
                 ]
               );
-              await pages.create({
+              await strapi.services['pages'].create({
                 ...createPageParam,
                 app: res.id,
               });
@@ -176,7 +175,7 @@ module.exports = {
                   'isPage'
                 ]
               );
-              await folders.create({
+              await strapi.services['pages'].create({
                 ...createFolderParam,
                 app: res.id,
               });
@@ -184,7 +183,7 @@ module.exports = {
           })
 
           const blockCategories = await strapi.services['block-category'].find({ app: template.id });
-          console.log('blockCategories', blockCategories);
+          // console.log('blockCategories', blockCategories);
           blockCategories.forEach(async (blockCategory) => {
             await strapi.services['block-category'].create({
               ...blockCategory,
@@ -193,7 +192,7 @@ module.exports = {
           })
 
           const blocks = await strapi.services['block'].listNew({ appId: template.id, createdBy: user.id });
-          console.log('blocks', blocks);
+          // console.log('blocks', blocks);
           blocks.forEach(async (block) => {
             const createParam = pickObject(block, [
               'label',
@@ -232,7 +231,7 @@ module.exports = {
           })
 
           const sources = await strapi.services['sources'].find({ app: template.id });
-          console.log('sources', sources);
+          // console.log('sources', sources);
           sources.forEach(async (source) => {
             await strapi.services['sources'].create({
               ...source,
@@ -241,7 +240,7 @@ module.exports = {
           })
 
           const extensions = await strapi.services['app-extensions'].find({ app: template.id });
-          console.log('extensions', extensions);
+          // console.log('extensions', extensions);
           extensions.forEach(async (extension) => {
             await strapi.services['app-extensions'].create({
               ...extension,
@@ -250,7 +249,7 @@ module.exports = {
           })
 
           const workflows = await strapi.services['workflows'].find({ app: template.id });
-          console.log('workflows', workflows);
+          // console.log('workflows', workflows);
           workflows.forEach(async (workflow) => {
             await strapi.services['workflows'].create({
               ...workflow,
@@ -269,6 +268,71 @@ module.exports = {
       delete createParam.action;
       return strapi.services.apps.create(createParam);
     }
+  },
+
+  async delete(ctx) {
+    const { id } = ctx.params;
+    const { user = {} } = ctx.state;
+    try {
+      const blockGroups = await strapi.services['block-groups'].find({ app: id });
+      // console.log('blockGroups', blockGroups);
+      blockGroups.forEach(async (blockGroup) => {
+        await strapi.services['block-groups'].delete({
+          id: blockGroup.id,
+        });
+      })
+
+      const pages = await strapi.services['pages'].find({ app: id });
+      // console.log('pages', pages);
+      pages.forEach(async (page) => {
+        await strapi.services['pages'].delete({
+          id: page.id,
+        });
+      })
+
+      const blockCategories = await strapi.services['block-category'].find({ app: id });
+      // console.log('blockCategories', blockCategories);
+      blockCategories.forEach(async (blockCategory) => {
+        await strapi.services['block-category'].delete({
+          id: blockCategory.id
+        });
+      })
+
+      const blocks = await strapi.services['block'].listNew({ appId: id, createdBy: user.id });
+      // console.log('blocks', blocks);
+      blocks.forEach(async (block) => {
+        await strapi.services['block'].delete({
+          id: block.id,
+        });
+      })
+
+      const sources = await strapi.services['sources'].find({ app: id });
+      // console.log('sources', sources);
+      sources.forEach(async (source) => {
+        await strapi.services['sources'].delete({
+          id: source.id,
+        });
+      })
+
+      const extensions = await strapi.services['app-extensions'].find({ app: id });
+      // console.log('extensions', extensions);
+      extensions.forEach(async (extension) => {
+        await strapi.services['app-extensions'].delete({
+          id: extension.id,
+        });
+      })
+
+      const workflows = await strapi.services['workflows'].find({ app: id });
+      // console.log('workflows', workflows);
+      workflows.forEach(async (workflow) => {
+        await strapi.services['workflows'].delete({
+          id: workflow.id,
+        });
+      })
+    } catch (error) {
+      console.error('delete app error', error);
+    }
+    return strapi.services['apps'].delete({ id });
   },
 
   async update(ctx) {
