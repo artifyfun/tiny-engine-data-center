@@ -160,7 +160,7 @@ module.exports = {
                   'page_content'
                 ]
               );
-              await pages.createPage({
+              await pages.create({
                 ...createPageParam,
                 app: res.id,
               });
@@ -233,8 +233,8 @@ module.exports = {
 
           const sources = await strapi.services['sources'].find({ app: template.id });
           console.log('sources', sources);
-          resources.forEach(async (source) => {
-            await strapi.services['sources'].createSources({
+          sources.forEach(async (source) => {
+            await strapi.services['sources'].create({
               ...source,
               app: res.id,
             });
