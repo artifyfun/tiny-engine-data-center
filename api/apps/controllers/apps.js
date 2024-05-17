@@ -14,6 +14,29 @@ const { sanitizeEntity } = require('strapi-utils');
 const { ERROR_TYPE, UNIT_TYPE, AUTH_TYPE } = require('../../../config/constants');
 const { throwErrors, getPublicSuperAdmin, isTenantAdmin } = require('../../../config/toolkits');
 
+/**
+ * 选择对象中的属性返回新对象
+ * @param {Object} obj 被选择对象
+ * @param {Array} fields 需要选择的属性数组
+ * @param {Boolean} isInclude 是否为包含模式
+ */
+function pickObject(obj, fileds, isInclude = true) {
+  const toString = Object.prototype.toString.call(obj);
+  const objType = toString.slice(8, toString.length - 1);
+  if (objType !== 'Object') {
+    throw new Error('first param must be an Object');
+  }
+  const result = {};
+  const fieldsSet = new Set(fileds);
+  Object.keys(obj).forEach(key => {
+    const shouldCopyValue = isInclude ? fieldsSet.has(key) : !fieldsSet.has(key);
+    if (shouldCopyValue) {
+      result[key] = obj[key];
+    }
+  });
+  return result;
+}
+
 module.exports = {
   // 我的相关数据查询
   async findOne(ctx) {
@@ -100,7 +123,6 @@ module.exports = {
       delete createParam.action;
       try {
         const res = await strapi.services.apps.create(createParam);
-
         try {
           const template = await strapi.services.apps.findOne({ template_type: 'serviceDevelop'});
           console.log('template', template);
@@ -108,24 +130,133 @@ module.exports = {
 
           const blockGroups = await strapi.services['block-groups'].find({ app: template.id });
           console.log('blockGroups', blockGroups);
+          blockGroups.forEach(async (blockGroup) => {
+            const createParam = pickObject(blockGroup, ['app', 'name', 'desc']);
+            await strapi.services['block-groups'].create({
+              ...createParam,
+              app: res.id,
+            });
+          })
 
           const pages = await strapi.services['pages'].find({ app: template.id });
           console.log('pages', pages);
-
-          const blocks = await strapi.services['block'].listNew({ appId: template.id, createdBy: user.id });
-          console.log('blocks', blocks);
+          pages.forEach(async (page) => {
+            const { is_page } = page;
+            const { pages, folders } = strapi.services
+            if (is_page) {
+              // 创建页面
+              const createPageParam = pickObject(
+                page,
+                [
+                  'app',
+                  'group',
+                  'isBody',
+                  'isHome',
+                  'isPage',
+                  'message',
+                  'name',
+                  'parentId',
+                  'route',
+                  'page_content'
+                ]
+              );
+              await pages.createPage({
+                ...createPageParam,
+                app: res.id,
+              });
+            } else {
+              // 创建文件夹
+              const createFolderParam = pickObject(
+                page,
+                [
+                  'app',
+                  'name',
+                  'parentId',
+                  'route',
+                  'isPage'
+                ]
+              );
+              await folders.create({
+                ...createFolderParam,
+                app: res.id,
+              });
+            }
+          })
 
           const blockCategories = await strapi.services['block-category'].find({ app: template.id });
           console.log('blockCategories', blockCategories);
+          blockCategories.forEach(async (blockCategory) => {
+            await strapi.services['block-category'].create({
+              ...blockCategory,
+              app: res.id,
+            });
+          })
+
+          const blocks = await strapi.services['block'].listNew({ appId: template.id, createdBy: user.id });
+          console.log('blocks', blocks);
+          blocks.forEach(async (block) => {
+            const createParam = pickObject(block, [
+              'label',
+              'name_cn',
+              'framework',
+              'content',
+              'description',
+              'path',
+              'screenshot',
+              'created_app',
+              'tags',
+              'public',
+              'public_scope_tenants',
+              'categories',
+              'occupier',
+              'isDefault',
+              'isOfficial'
+            ]);
+            // public 不是部分公开, 则public_scope_tenants为空数组
+            if (createParam.public !== E_Public.SemiPublic) {
+              createParam.public_scope_tenants = [];
+            }
+            // 对传入的tags 进行过滤
+            if (createParam.tags) {
+              createParam.tags = createParam.tags.filter((tag) => !!tag);
+            }
+            // 处理区块截图
+            // if (createParam.screenshot) {
+            //  const url = await this.service.materialCenter.block.handleScreenshot(createParam);
+            //  createParam.screenshot = url;
+            //  }
+            await strapi.services['block'].create({
+              ...createParam,
+              created_app: res.id,
+            });
+          })
 
           const sources = await strapi.services['sources'].find({ app: template.id });
           console.log('sources', sources);
+          resources.forEach(async (source) => {
+            await strapi.services['sources'].createSources({
+              ...source,
+              app: res.id,
+            });
+          })
 
           const extensions = await strapi.services['app-extensions'].find({ app: template.id });
           console.log('extensions', extensions);
+          extensions.forEach(async (extension) => {
+            await strapi.services['app-extensions'].create({
+              ...extension,
+              app: res.id,
+            });
+          })
 
           const workflows = await strapi.services['workflows'].find({ app: template.id });
           console.log('workflows', workflows);
+          workflows.forEach(async (workflow) => {
+            await strapi.services['workflows'].create({
+              ...workflow,
+              app: res.id,
+            });
+          })
         } catch (error) {
           console.error('create app from template error', error);
         }
