@@ -21,8 +21,8 @@
       "required": true
     },
     "app": {
-      "model": "apps",
-      "via": "block_categories"
+      "via": "block_categories",
+      "model": "apps"
     },
     "desc": {
       "type": "string"
