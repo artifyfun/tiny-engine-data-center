@@ -254,6 +254,7 @@ module.exports = {
             await strapi.services['workflows'].create({
               ...workflow,
               app: res.id,
+              comfyui_url: body.comfyui_url
             });
           })
         } catch (error) {
@@ -365,7 +366,18 @@ module.exports = {
         auth_type: AUTH_TYPE.acquiescence,
       });
     }
-    return strapi.services.apps.update({ id }, body);
+    try {
+      const workflows = await strapi.services['workflows'].find({ app: id });
+      workflows.forEach(async (workflow) => {
+        await strapi.services['workflows'].update({
+          id: workflow.id,
+        }, {
+          comfyui_url: body.comfyui_url,
+        });
+      })
+    } finally {
+      return strapi.services.apps.update({ id }, body);
+    }
   },
 
 

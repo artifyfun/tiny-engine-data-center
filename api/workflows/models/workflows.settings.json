@@ -45,6 +45,9 @@
     "workflowType": {
       "type": "string",
       "required": true
+    },
+    "comfyui_url": {
+      "type": "string"
     }
   }
 }
