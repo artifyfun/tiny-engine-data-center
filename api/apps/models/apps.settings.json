@@ -28,9 +28,6 @@
     "assets_url": {
       "type": "string"
     },
-    "comfyui_url": {
-      "type": "string"
-    },
     "obs_url": {
       "type": "string"
     },
@@ -51,7 +48,7 @@
       "type": "json"
     },
     "image_url": {
-      "type": "string"
+      "type": "text"
     },
     "git_group": {
       "type": "string"

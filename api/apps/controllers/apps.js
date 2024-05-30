@@ -254,7 +254,7 @@ module.exports = {
             await strapi.services['workflows'].create({
               ...workflow,
               app: res.id,
-              comfyui_url: body.comfyui_url
+              comfyui_url: body.config?.comfyui_url
             });
           })
         } catch (error) {
@@ -372,7 +372,7 @@ module.exports = {
         await strapi.services['workflows'].update({
           id: workflow.id,
         }, {
-          comfyui_url: body.comfyui_url,
+          comfyui_url: body.config?.comfyui_url,
         });
       })
     } finally {
