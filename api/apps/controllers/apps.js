@@ -376,7 +376,14 @@ module.exports = {
         });
       })
     } finally {
-      return strapi.services.apps.update({ id }, body);
+      const current = await strapi.services.apps.findOne({ id });
+      return strapi.services.apps.update({ id }, {
+        ...body,
+        config: {
+          ...current.config,
+          ...body.config,
+        }
+      });
     }
   },
 

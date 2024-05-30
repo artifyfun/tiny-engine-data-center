@@ -48,7 +48,7 @@
       "type": "json"
     },
     "image_url": {
-      "type": "text"
+      "type": "string"
     },
     "git_group": {
       "type": "string"
