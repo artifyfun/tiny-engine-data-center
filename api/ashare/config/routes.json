@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/ashares",
+      "handler": "ashare.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/ashares/count",
+      "handler": "ashare.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/ashares/:id",
+      "handler": "ashare.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/ashares",
+      "handler": "ashare.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/ashares/:id",
+      "handler": "ashare.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/ashares/:id",
+      "handler": "ashare.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

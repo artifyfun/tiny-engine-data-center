@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ashares",
+  "info": {
+    "name": "ashare"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "history": {
+      "type": "json"
+    },
+    "symbol": {
+      "type": "string"
+    }
+  }
+}
